@@ -1,23 +1,36 @@
-const express = require('express')
-const app =express()
-const db = require('./db')
+const express = require("express");
+const app = express();
+const db = require("./db"); 
+require('dotenv').config();
+const passport = require('./auth');
+const bodyParser = require("body-parser");
+app.use(bodyParser.json());
 
-const bodyParser = require('body-parser')
-app.use(bodyParser.json())
+// const PORT = 8090; 
+const PORT=process.env.PORT ||8090
 
-require("dotenv").config()
-let port = process.env.PORT ||8090
+//middleware function
+const logRequest = (req, res, next) => {
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+  next(); // Call the next middleware function
+};
 
-app.get('/',(req,res)=>{
-    res.send('Hello World')
-})
+app.use(logRequest);
 
-const personRoutes=require('./routes/personRoutes')
-const MenuItemRoutes = require('./routes/menuRoutes')
-app.use('/person',personRoutes)
-app.use('/menu',MenuItemRoutes)
+app.use(passport.initialize());
+const localAuthMiddleware = passport.authenticate('local', { session: false });
+
+app.get("/", (req, res) => {
+  res.send("Hello World");
+});
+
+const personRoutes = require("./routes/personRoutes");
+const MenuItemRoutes = require("./routes/menuRoutes");
+
+app.use("/person", personRoutes);
+app.use("/menu",MenuItemRoutes);
 
 
-app.listen(port,()=>{
-    console.log('Server is running on port 8090')
-})
+app.listen(PORT, () => {
+  console.log("Server is running on port 8090");
+});
